@@ -245,6 +245,21 @@ st.markdown(
         border-color: #e2e8f0;
     }
 
+    /* Candidates outside the selected role preference remain clickable,
+       but are visually de-emphasised. */
+    .st-key-candidate_grid [class*="st-key-nonpreferred_"] button {
+        opacity: 0.35 !important;
+        color: #64748b !important;
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+        filter: grayscale(35%);
+    }
+
+    .st-key-candidate_grid [class*="st-key-nonpreferred_"] button:hover {
+        opacity: 0.60 !important;
+        border-color: #94a3b8 !important;
+    }
+
     /* Unassigned candidates with no remaining available roles */
     .st-key-candidate_grid [class*="st-key-no_role_"] button {
         opacity: 1 !important;
@@ -452,13 +467,11 @@ with st.container(key="candidate_grid"):
 
 
 
+            # Preferences guide the visuals, but do not block selection.
+            # Every unassigned candidate becomes clickable after a role is chosen.
             candidate_disabled = (
-                is_assigned
-                or has_no_available_role
-                or (
-                    active_interest is not None
-                    and not is_interested
-                )
+                active_interest is None
+                or is_assigned
             )
 
             with candidate_columns[column_number]:
@@ -469,9 +482,16 @@ with st.container(key="candidate_grid"):
                         f"assigned_{candidate}"
                         if is_assigned
                         else (
-                            f"no_role_{candidate}"
-                            if has_no_available_role
-                            else f"candidate_{candidate}"
+                            f"nonpreferred_{candidate}"
+                            if (
+                                active_interest is not None
+                                and not is_interested
+                            )
+                            else (
+                                f"no_role_{candidate}"
+                                if has_no_available_role
+                                else f"candidate_{candidate}"
+                            )
                         )
                     ),
                     type=(
